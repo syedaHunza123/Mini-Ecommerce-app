@@ -1,0 +1,590 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mini E-commerce Store</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.4.0/css/all.min.css">
+    <style>
+        .cart-item-enter {
+            animation: slideIn 0.3s ease-out;
+        }
+        
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(-10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        .success-animation {
+            animation: bounce 0.6s ease-in-out;
+        }
+        
+        @keyframes bounce {
+            0%, 20%, 50%, 80%, 100% {
+                transform: translateY(0);
+            }
+            40% {
+                transform: translateY(-10px);
+            }
+            60% {
+                transform: translateY(-5px);
+            }
+        }
+        
+        .product-card:hover {
+            transform: translateY(-2px);
+            transition: all 0.3s ease;
+        }
+        
+        .fade-in {
+            animation: fadeIn 0.5s ease-in;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+    </style>
+</head>
+<body class="bg-gray-50">
+    <!-- Header -->
+    <header class="bg-white shadow-md sticky top-0 z-50">
+        <div class="container mx-auto px-4 py-4">
+            <div class="flex justify-between items-center">
+                <h1 class="text-2xl font-bold text-gray-800">
+                    <i class="fas fa-store mr-2 text-blue-600"></i>
+                    Mini Store
+                </h1>
+                
+                <nav class="flex space-x-6">
+                    <button id="homeBtn" class="text-gray-600 hover:text-blue-600 transition duration-300">
+                        <i class="fas fa-home mr-1"></i> Home
+                    </button>
+                    <button id="cartBtn" class="relative text-gray-600 hover:text-blue-600 transition duration-300">
+                        <i class="fas fa-shopping-cart mr-1"></i> Cart
+                        <span id="cartCount" class="absolute -top-2 -right-2 bg-red-500 text-white text-xs rounded-full px-2 py-1 hidden">0</span>
+                    </button>
+                </nav>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="container mx-auto px-4 py-8">
+        <!-- Home Section -->
+        <section id="homeSection" class="fade-in">
+            <div class="text-center mb-8">
+                <h2 class="text-3xl font-bold text-gray-800 mb-4">Welcome to Our Store</h2>
+                <p class="text-gray-600 max-w-2xl mx-auto">Discover amazing products at great prices. Shop with confidence and enjoy our seamless shopping experience.</p>
+            </div>
+            
+            <!-- Product Grid -->
+            <div id="productGrid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+                <!-- Products will be loaded here -->
+            </div>
+        </section>
+
+        <!-- Cart Section -->
+        <section id="cartSection" class="hidden fade-in">
+            <div class="flex justify-between items-center mb-6">
+                <h2 class="text-3xl font-bold text-gray-800">Shopping Cart</h2>
+                <button id="clearCartBtn" class="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-lg transition duration-300">
+                    <i class="fas fa-trash mr-2"></i>Clear Cart
+                </button>
+            </div>
+            
+            <div id="cartItems" class="bg-white rounded-lg shadow-md p-6 mb-6">
+                <p class="text-gray-500 text-center py-8">Your cart is empty</p>
+            </div>
+            
+            <div id="cartTotal" class="bg-white rounded-lg shadow-md p-6 mb-6 hidden">
+                <div class="flex justify-between items-center text-xl font-bold">
+                    <span>Total: </span>
+                    <span id="totalAmount">$0.00</span>
+                </div>
+            </div>
+            
+            <div class="text-center">
+                <button id="checkoutBtn" class="bg-blue-600 hover:bg-blue-700 text-white px-8 py-3 rounded-lg font-semibold transition duration-300 disabled:opacity-50 disabled:cursor-not-allowed" disabled>
+                    Proceed to Checkout
+                </button>
+            </div>
+        </section>
+
+        <!-- Checkout Section -->
+        <section id="checkoutSection" class="hidden fade-in">
+            <div class="max-w-2xl mx-auto">
+                <h2 class="text-3xl font-bold text-gray-800 mb-6">Checkout</h2>
+                
+                <div class="bg-white rounded-lg shadow-md p-6 mb-6">
+                    <h3 class="text-xl font-semibold mb-4">Order Summary</h3>
+                    <div id="checkoutItems" class="mb-4">
+                        <!-- Checkout items will be loaded here -->
+                    </div>
+                    <div class="border-t pt-4">
+                        <div class="flex justify-between items-center text-xl font-bold">
+                            <span>Total: </span>
+                            <span id="checkoutTotal">$0.00</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <form id="checkoutForm" class="bg-white rounded-lg shadow-md p-6">
+                    <h3 class="text-xl font-semibold mb-4">Shipping Information</h3>
+                    
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                        <div>
+                            <label class="block text-gray-700 font-semibold mb-2">Full Name *</label>
+                            <input type="text" id="fullName" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-blue-500" required>
+                            <span class="text-red-500 text-sm hidden" id="fullNameError">Please enter your full name</span>
+                        </div>
+                        
+                        <div>
+                            <label class="block text-gray-700 font-semibold mb-2">Email *</label>
+                            <input type="email" id="email" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-blue-500" required>
+                            <span class="text-red-500 text-sm hidden" id="emailError">Please enter a valid email</span>
+                        </div>
+                    </div>
+                    
+                    <div class="mb-4">
+                        <label class="block text-gray-700 font-semibold mb-2">Street Address *</label>
+                        <input type="text" id="address" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-blue-500" required>
+                        <span class="text-red-500 text-sm hidden" id="addressError">Please enter your address</span>
+                    </div>
+                    
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+                        <div>
+                            <label class="block text-gray-700 font-semibold mb-2">City *</label>
+                            <input type="text" id="city" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-blue-500" required>
+                            <span class="text-red-500 text-sm hidden" id="cityError">Please enter your city</span>
+                        </div>
+                        
+                        <div>
+                            <label class="block text-gray-700 font-semibold mb-2">State *</label>
+                            <input type="text" id="state" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-blue-500" required>
+                            <span class="text-red-500 text-sm hidden" id="stateError">Please enter your state</span>
+                        </div>
+                        
+                        <div>
+                            <label class="block text-gray-700 font-semibold mb-2">ZIP Code *</label>
+                            <input type="text" id="zipCode" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-blue-500" required>
+                            <span class="text-red-500 text-sm hidden" id="zipCodeError">Please enter your ZIP code</span>
+                        </div>
+                    </div>
+                    
+                    <div class="flex justify-between">
+                        <button type="button" id="backToCartBtn" class="bg-gray-500 hover:bg-gray-600 text-white px-6 py-3 rounded-lg font-semibold transition duration-300">
+                            Back to Cart
+                        </button>
+                        <button type="submit" class="bg-green-600 hover:bg-green-700 text-white px-6 py-3 rounded-lg font-semibold transition duration-300">
+                            Place Order
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </section>
+
+        <!-- Success Section -->
+        <section id="successSection" class="hidden fade-in">
+            <div class="text-center max-w-md mx-auto">
+                <div class="success-animation">
+                    <i class="fas fa-check-circle text-6xl text-green-500 mb-4"></i>
+                </div>
+                <h2 class="text-3xl font-bold text-gray-800 mb-4">Order Successful!</h2>
+                <p class="text-gray-600 mb-6">Thank you for your purchase. Your order has been placed successfully and will be processed soon.</p>
+                <div id="orderDetails" class="bg-white rounded-lg shadow-md p-6 mb-6 text-left">
+                    <!-- Order details will be shown here -->
+                </div>
+                <button id="continueShoppingBtn" class="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-lg font-semibold transition duration-300">
+                    Continue Shopping
+                </button>
+            </div>
+        </section>
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-gray-800 text-white py-8 mt-16">
+        <div class="container mx-auto px-4 text-center">
+            <p>&copy; 2024 Mini Store. All rights reserved.</p>
+            <p class="text-gray-400 mt-2">Built with HTML, CSS, and JavaScript</p>
+        </div>
+    </footer>
+
+    <script>
+        // Mock product data
+        const products = [
+            {
+                id: 1,
+                name: "Wireless Headphones",
+                price: 99.99,
+                image: "https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=300&h=300&fit=crop",
+                description: "High-quality wireless headphones with noise cancellation"
+            },
+            {
+                id: 2,
+                name: "Smartphone",
+                price: 699.99,
+                image: "https://images.unsplash.com/photo-1511707171634-5f897ff02aa9?w=300&h=300&fit=crop",
+                description: "Latest smartphone with advanced features"
+            },
+            {
+                id: 3,
+                name: "Laptop",
+                price: 1299.99,
+                image: "https://images.unsplash.com/photo-1496181133206-80ce9b88a853?w=300&h=300&fit=crop",
+                description: "Powerful laptop for work and gaming"
+            },
+            {
+                id: 4,
+                name: "Smart Watch",
+                price: 249.99,
+                image: "https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=300&h=300&fit=crop",
+                description: "Fitness tracking smartwatch with heart rate monitor"
+            },
+            {
+                id: 5,
+                name: "Bluetooth Speaker",
+                price: 79.99,
+                image: "https://images.unsplash.com/photo-1608043152269-423dbba4e7e1?w=300&h=300&fit=crop",
+                description: "Portable bluetooth speaker with excellent sound quality"
+            },
+            {
+                id: 6,
+                name: "Tablet",
+                price: 329.99,
+                image: "https://images.unsplash.com/photo-1544244015-0df4b3ffc6b0?w=300&h=300&fit=crop",
+                description: "Lightweight tablet perfect for reading and entertainment"
+            },
+            {
+                id: 7,
+                name: "Gaming Mouse",
+                price: 59.99,
+                image: "https://images.unsplash.com/photo-1527864550417-7fd91fc51a46?w=300&h=300&fit=crop",
+                description: "Precision gaming mouse with customizable buttons"
+            },
+            {
+                id: 8,
+                name: "Keyboard",
+                price: 89.99,
+                image: "https://images.unsplash.com/photo-1587829741301-dc798b83add3?w=300&h=300&fit=crop",
+                description: "Mechanical keyboard with RGB backlighting"
+            }
+        ];
+
+        // Cart functionality
+        class ShoppingCart {
+            constructor() {
+                this.items = this.loadCart();
+                this.currentSection = 'home';
+                this.init();
+            }
+
+            init() {
+                this.loadProducts();
+                this.bindEvents();
+                this.updateCartDisplay();
+                this.showSection('home');
+            }
+
+            loadProducts() {
+                const productGrid = document.getElementById('productGrid');
+                productGrid.innerHTML = '';
+
+                products.forEach(product => {
+                    const productCard = document.createElement('div');
+                    productCard.className = 'product-card bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition duration-300';
+                    productCard.innerHTML = `
+                        <img src="${product.image}" alt="${product.name}" class="w-full h-48 object-cover">
+                        <div class="p-4">
+                            <h3 class="font-semibold text-lg mb-2">${product.name}</h3>
+                            <p class="text-gray-600 text-sm mb-3">${product.description}</p>
+                            <div class="flex justify-between items-center">
+                                <span class="text-2xl font-bold text-blue-600">$${product.price.toFixed(2)}</span>
+                                <button onclick="cart.addToCart(${product.id})" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg transition duration-300">
+                                    <i class="fas fa-cart-plus mr-1"></i> Add to Cart
+                                </button>
+                            </div>
+                        </div>
+                    `;
+                    productGrid.appendChild(productCard);
+                });
+            }
+
+            bindEvents() {
+                // Navigation
+                document.getElementById('homeBtn').addEventListener('click', () => this.showSection('home'));
+                document.getElementById('cartBtn').addEventListener('click', () => this.showSection('cart'));
+                document.getElementById('checkoutBtn').addEventListener('click', () => this.showSection('checkout'));
+                document.getElementById('backToCartBtn').addEventListener('click', () => this.showSection('cart'));
+                document.getElementById('continueShoppingBtn').addEventListener('click', () => this.showSection('home'));
+
+                // Cart actions
+                document.getElementById('clearCartBtn').addEventListener('click', () => this.clearCart());
+
+                // Checkout form
+                document.getElementById('checkoutForm').addEventListener('submit', (e) => this.handleCheckout(e));
+            }
+
+            addToCart(productId) {
+                const product = products.find(p => p.id === productId);
+                if (!product) return;
+
+                const existingItem = this.items.find(item => item.id === productId);
+                if (existingItem) {
+                    existingItem.quantity += 1;
+                } else {
+                    this.items.push({
+                        ...product,
+                        quantity: 1
+                    });
+                }
+
+                this.saveCart();
+                this.updateCartDisplay();
+                this.showAddToCartAnimation();
+            }
+
+            removeFromCart(productId) {
+                this.items = this.items.filter(item => item.id !== productId);
+                this.saveCart();
+                this.updateCartDisplay();
+            }
+
+            updateQuantity(productId, newQuantity) {
+                if (newQuantity <= 0) {
+                    this.removeFromCart(productId);
+                    return;
+                }
+
+                const item = this.items.find(item => item.id === productId);
+                if (item) {
+                    item.quantity = newQuantity;
+                    this.saveCart();
+                    this.updateCartDisplay();
+                }
+            }
+
+            clearCart() {
+                if (confirm('Are you sure you want to clear your cart?')) {
+                    this.items = [];
+                    this.saveCart();
+                    this.updateCartDisplay();
+                }
+            }
+
+            updateCartDisplay() {
+                const cartCount = document.getElementById('cartCount');
+                const cartItems = document.getElementById('cartItems');
+                const cartTotal = document.getElementById('cartTotal');
+                const totalAmount = document.getElementById('totalAmount');
+                const checkoutBtn = document.getElementById('checkoutBtn');
+
+                const totalItems = this.items.reduce((sum, item) => sum + item.quantity, 0);
+                const totalPrice = this.items.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+
+                // Update cart count
+                if (totalItems > 0) {
+                    cartCount.textContent = totalItems;
+                    cartCount.classList.remove('hidden');
+                } else {
+                    cartCount.classList.add('hidden');
+                }
+
+                // Update cart items display
+                if (this.items.length === 0) {
+                    cartItems.innerHTML = '<p class="text-gray-500 text-center py-8">Your cart is empty</p>';
+                    cartTotal.classList.add('hidden');
+                    checkoutBtn.disabled = true;
+                } else {
+                    cartItems.innerHTML = this.items.map(item => `
+                        <div class="cart-item-enter flex items-center justify-between py-4 border-b border-gray-200 last:border-b-0">
+                            <div class="flex items-center">
+                                <img src="${item.image}" alt="${item.name}" class="w-16 h-16 object-cover rounded-lg mr-4">
+                                <div>
+                                    <h4 class="font-semibold">${item.name}</h4>
+                                    <p class="text-gray-600">$${item.price.toFixed(2)}</p>
+                                </div>
+                            </div>
+                            <div class="flex items-center space-x-3">
+                                <div class="flex items-center border border-gray-300 rounded-lg">
+                                    <button onclick="cart.updateQuantity(${item.id}, ${item.quantity - 1})" class="px-2 py-1 hover:bg-gray-100">
+                                        <i class="fas fa-minus"></i>
+                                    </button>
+                                    <span class="px-3 py-1 border-l border-r border-gray-300">${item.quantity}</span>
+                                    <button onclick="cart.updateQuantity(${item.id}, ${item.quantity + 1})" class="px-2 py-1 hover:bg-gray-100">
+                                        <i class="fas fa-plus"></i>
+                                    </button>
+                                </div>
+                                <span class="font-semibold text-lg w-20 text-right">$${(item.price * item.quantity).toFixed(2)}</span>
+                                <button onclick="cart.removeFromCart(${item.id})" class="text-red-500 hover:text-red-700 ml-2">
+                                    <i class="fas fa-trash"></i>
+                                </button>
+                            </div>
+                        </div>
+                    `).join('');
+
+                    cartTotal.classList.remove('hidden');
+                    totalAmount.textContent = `$${totalPrice.toFixed(2)}`;
+                    checkoutBtn.disabled = false;
+                }
+
+                // Update checkout display
+                this.updateCheckoutDisplay();
+            }
+
+            updateCheckoutDisplay() {
+                const checkoutItems = document.getElementById('checkoutItems');
+                const checkoutTotal = document.getElementById('checkoutTotal');
+
+                if (this.items.length === 0) return;
+
+                const totalPrice = this.items.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+
+                checkoutItems.innerHTML = this.items.map(item => `
+                    <div class="flex justify-between items-center py-2">
+                        <span>${item.name} x ${item.quantity}</span>
+                        <span>$${(item.price * item.quantity).toFixed(2)}</span>
+                    </div>
+                `).join('');
+
+                checkoutTotal.textContent = `$${totalPrice.toFixed(2)}`;
+            }
+
+            showSection(section) {
+                // Hide all sections
+                document.getElementById('homeSection').classList.add('hidden');
+                document.getElementById('cartSection').classList.add('hidden');
+                document.getElementById('checkoutSection').classList.add('hidden');
+                document.getElementById('successSection').classList.add('hidden');
+
+                // Show requested section
+                document.getElementById(`${section}Section`).classList.remove('hidden');
+                this.currentSection = section;
+
+                // Update displays when showing cart or checkout
+                if (section === 'cart') {
+                    this.updateCartDisplay();
+                } else if (section === 'checkout') {
+                    this.updateCheckoutDisplay();
+                }
+            }
+
+            handleCheckout(e) {
+                e.preventDefault();
+                
+                if (!this.validateForm()) {
+                    return;
+                }
+
+                const formData = new FormData(e.target);
+                const orderData = {
+                    items: [...this.items],
+                    total: this.items.reduce((sum, item) => sum + (item.price * item.quantity), 0),
+                    customer: {
+                        fullName: document.getElementById('fullName').value,
+                        email: document.getElementById('email').value,
+                        address: document.getElementById('address').value,
+                        city: document.getElementById('city').value,
+                        state: document.getElementById('state').value,
+                        zipCode: document.getElementById('zipCode').value
+                    },
+                    orderDate: new Date().toISOString()
+                };
+
+                // Show order details in success section
+                this.showOrderSuccess(orderData);
+
+                // Clear cart after successful order
+                this.items = [];
+                this.saveCart();
+                this.updateCartDisplay();
+
+                // Reset form
+                document.getElementById('checkoutForm').reset();
+            }
+
+            validateForm() {
+                const fields = [
+                    { id: 'fullName', errorId: 'fullNameError', message: 'Please enter your full name' },
+                    { id: 'email', errorId: 'emailError', message: 'Please enter a valid email' },
+                    { id: 'address', errorId: 'addressError', message: 'Please enter your address' },
+                    { id: 'city', errorId: 'cityError', message: 'Please enter your city' },
+                    { id: 'state', errorId: 'stateError', message: 'Please enter your state' },
+                    { id: 'zipCode', errorId: 'zipCodeError', message: 'Please enter your ZIP code' }
+                ];
+
+                let isValid = true;
+
+                fields.forEach(field => {
+                    const input = document.getElementById(field.id);
+                    const error = document.getElementById(field.errorId);
+                    
+                    if (!input.value.trim()) {
+                        error.classList.remove('hidden');
+                        input.classList.add('border-red-500');
+                        isValid = false;
+                    } else {
+                        error.classList.add('hidden');
+                        input.classList.remove('border-red-500');
+                    }
+                });
+
+                // Email validation
+                const email = document.getElementById('email');
+                const emailError = document.getElementById('emailError');
+                const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+                
+                if (email.value.trim() && !emailRegex.test(email.value)) {
+                    emailError.textContent = 'Please enter a valid email address';
+                    emailError.classList.remove('hidden');
+                    email.classList.add('border-red-500');
+                    isValid = false;
+                }
+
+                return isValid;
+            }
+
+            showOrderSuccess(orderData) {
+                const orderDetails = document.getElementById('orderDetails');
+                orderDetails.innerHTML = `
+                    <h4 class="font-semibold mb-2">Order Details:</h4>
+                    <p><strong>Order Date:</strong> ${new Date(orderData.orderDate).toLocaleDateString()}</p>
+                    <p><strong>Customer:</strong> ${orderData.customer.fullName}</p>
+                    <p><strong>Email:</strong> ${orderData.customer.email}</p>
+                    <p><strong>Total Items:</strong> ${orderData.items.reduce((sum, item) => sum + item.quantity, 0)}</p>
+                    <p><strong>Total Amount:</strong> $${orderData.total.toFixed(2)}</p>
+                `;
+                
+                this.showSection('success');
+            }
+
+            showAddToCartAnimation() {
+                const cartBtn = document.getElementById('cartBtn');
+                cartBtn.classList.add('animate-pulse');
+                setTimeout(() => {
+                    cartBtn.classList.remove('animate-pulse');
+                }, 500);
+            }
+
+            saveCart() {
+                localStorage.setItem('miniStoreCart', JSON.stringify(this.items));
+            }
+
+            loadCart() {
+                const saved = localStorage.getItem('miniStoreCart');
+                return saved ? JSON.parse(saved) : [];
+            }
+        }
+
+        // Initialize the shopping cart
+        const cart = new ShoppingCart();
+    </script>
+</body>
+</html>
